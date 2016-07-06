@@ -1,0 +1,80 @@
+var onRun = function(context) {
+
+  var documentName = context.document.displayName();
+
+  var selectedLayers = context.selection;
+  var selectedCount = selectedLayers.count();
+
+  if (selectedCount == 0) {
+    log('No layers are selected.');
+  }
+
+  var str = ""
+
+  for (var i=0; i<selectedCount; i++) {
+    var propertiesDict = {
+    }
+    currentLayer = selectedLayers[i]
+    var n = currentLayer.name()
+    var ns = [NSString stringWithString:n]
+    var cleanName = [ns stringByReplacingOccurrencesOfString: " " withString:"_"]
+
+
+
+
+    propertiesDict.name = "\"" + currentLayer.name() + "\""
+    // get size
+    var frame = currentLayer.frame()
+    propertiesDict.width = frame.width() * 2
+    propertiesDict.height = frame.height() * 2
+
+    propertiesDict.x = frame.x() * 2
+    propertiesDict.y = frame.y() * 2
+
+    // handle which type of layer it is
+    if (currentLayer.isKindOfClass(MSTextLayer)) {
+      log([currentLayer fontPostscriptName])
+    } else {
+
+    }
+    // propertiesDict.style = currentLayer.CSSAttributeString()
+    arr = currentLayer.CSSAttributes()
+    [arr removeObjectAtIndex:0]
+    br = arr[1].replace("border-radius: ", "")
+    propertiesDict.borderRadius = br.replace("px;", "")
+    bgc = arr[0].replace("background: ", "")
+    propertiesDict.backgroundColor = wrapInQuotes(bgc.replace(";", ""))
+    str += makeFramerLayerString(cleanName, propertiesDict)
+    setClipboard(str)
+
+
+}
+
+function wrapInQuotes(str) {
+  return "\"" + str + "\""
+}
+
+function makeFramerLayerString(name, dict) {
+  var layerString = ""
+
+  layerString += name + " = new Layer"
+  var dictionary = [NSDictionary dictionaryWithDictionary: dict]
+  layerString+= "\n"
+  for(var k in dictionary)
+    layerString+= "\t" + k + ": " + dictionary[k] + "\n"
+
+  return layerString
+}
+function setClipboard(text) {
+	pasteBoard = null;
+	if(typeof text === 'undefined') return null;
+
+	if(!this.pasteBoard) this.pasteBoard = NSPasteboard.generalPasteboard();
+
+	this.pasteBoard.declareTypes_owner([NSPasteboardTypeString], null);
+	this.pasteBoard.setString_forType(text, NSPasteboardTypeString);
+
+	return true;
+}
+
+};

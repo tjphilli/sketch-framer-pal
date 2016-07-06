@@ -1,0 +1,24 @@
+{
+  "author" : "",
+  "commands" : [
+    {
+      "script" : "script.cocoascript",
+      "name" : "Copy Layers",
+      "handlers" : {
+        "run" : "onRun"
+      },
+      "identifier" : "com.bohemiancoding.sketch.runscriptidentifier"
+    }
+  ],
+  "menu" : {
+    "items" : [
+      "com.bohemiancoding.sketch.runscriptidentifier"
+    ],
+    "title" : "Framer Pal"
+  },
+  "identifier" : "com.example.sketch.882fed77-e6f4-4735-b4bf-3338ca3756d9",
+  "version" : "1.0",
+  "description" : "",
+  "authorEmail" : "",
+  "name" : "FramerPal"
+}
