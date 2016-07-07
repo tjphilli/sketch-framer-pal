@@ -1,3 +1,5 @@
+var textAlignments = ["left", "right", "center", "justify"]
+
 var onRun = function(context) {
 
   var documentName = context.document.displayName();
@@ -15,35 +17,51 @@ var onRun = function(context) {
     var propertiesDict = {
     }
     currentLayer = selectedLayers[i]
+    var l = [selectedLayers objectAtIndex:0]
+    // var shape = l.layers().firstObject();
     var n = currentLayer.name()
     var ns = [NSString stringWithString:n]
     var cleanName = [ns stringByReplacingOccurrencesOfString: " " withString:"_"]
 
+    var cn = NSStringFromClass([l class])
+    log(cn)
 
+    // propertiesDict.style = currentLayer.CSSAttributeString()
+
+    // log([shape cornerRadiusFloat])
+    // log(l.layers().firstObject())
 
 
     propertiesDict.name = "\"" + currentLayer.name() + "\""
     // get size
     var frame = currentLayer.frame()
-    propertiesDict.width = frame.width() * 2
-    propertiesDict.height = frame.height() * 2
+    propertiesDict.width = frame.width()
+    propertiesDict.height = frame.height()
 
-    propertiesDict.x = frame.x() * 2
-    propertiesDict.y = frame.y() * 2
+    propertiesDict.x = frame.x()
+    propertiesDict.y = frame.y()
+
+    var styleDict = {}
 
     // handle which type of layer it is
-    if (currentLayer.isKindOfClass(MSTextLayer)) {
-      log([currentLayer fontPostscriptName])
-    } else {
+    if (cn == "MSTextLayer") {
+      propertiesDict.backgroundColor = wrapInQuotes("transparent")
+      propertiesDict.html = wrapInQuotes([currentLayer stringValue])
+      styleDict.fontFamily = wrapInQuotes([currentLayer fontPostscriptName])
+      var color = [currentLayer textColor]
+      var hex = color.hexValue()
+      styleDict.color = wrapInQuotes("#" + hex)
+      var fontSize = [currentLayer fontSize]
+      styleDict.fontSize = wrapInQuotes(fontSize + "px")
+      var textAlignment = [currentLayer textAlignment]
+      styleDict.textAlign = wrapInQuotes(textAlignments[textAlignment])
+    } else if (cn == "MSShapeGroup"){
+      log("handle shit")
 
+      // propertiesDict.borderRadius = br.replace("px;", "")
     }
-    // propertiesDict.style = currentLayer.CSSAttributeString()
-    arr = currentLayer.CSSAttributes()
-    [arr removeObjectAtIndex:0]
-    br = arr[1].replace("border-radius: ", "")
-    propertiesDict.borderRadius = br.replace("px;", "")
-    bgc = arr[0].replace("background: ", "")
-    propertiesDict.backgroundColor = wrapInQuotes(bgc.replace(";", ""))
+
+    propertiesDict.style = styleDict
     str += makeFramerLayerString(cleanName, propertiesDict)
     setClipboard(str)
 
@@ -61,7 +79,18 @@ function makeFramerLayerString(name, dict) {
   var dictionary = [NSDictionary dictionaryWithDictionary: dict]
   layerString+= "\n"
   for(var k in dictionary)
-    layerString+= "\t" + k + ": " + dictionary[k] + "\n"
+
+
+    if (k == "style") {
+      s = dictionary[k]
+      layerString+= "\t" + k + ":\n"
+      for(var m in s) {
+        layerString+= "\t\t" + m + ": " + s[m] + "\n"
+      }
+    }
+    else {
+      layerString+= "\t" + k + ": " + dictionary[k] + "\n"
+    }
 
   return layerString
 }
