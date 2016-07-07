@@ -11,25 +11,20 @@ var onRun = function(context) {
     log('No layers are selected.');
   }
 
+  log(selectedCount)
   var str = ""
 
   for (var i=0; i<selectedCount; i++) {
     var propertiesDict = {
     }
     currentLayer = selectedLayers[i]
-    var l = [selectedLayers objectAtIndex:0]
     // var shape = l.layers().firstObject();
     var n = currentLayer.name()
     var ns = [NSString stringWithString:n]
     var cleanName = [ns stringByReplacingOccurrencesOfString: " " withString:"_"]
 
-    var cn = NSStringFromClass([l class])
+    var cn = NSStringFromClass([currentLayer class])
     log(cn)
-
-    // propertiesDict.style = currentLayer.CSSAttributeString()
-
-    // log([shape cornerRadiusFloat])
-    // log(l.layers().firstObject())
 
 
     propertiesDict.name = "\"" + currentLayer.name() + "\""
@@ -56,9 +51,20 @@ var onRun = function(context) {
       var textAlignment = [currentLayer textAlignment]
       styleDict.textAlign = wrapInQuotes(textAlignments[textAlignment])
     } else if (cn == "MSShapeGroup"){
-      log("handle shit")
 
-      // propertiesDict.borderRadius = br.replace("px;", "")
+      var sublayers = currentLayer.layers()
+      var firstSubLayer = [sublayers objectAtIndex:0]
+
+      // check if rect
+      if (sublayers.count() == 1 && [firstSubLayer isKindOfClass:MSRectangleShape]) {
+        propertiesDict.borderRadius = [firstSubLayer cornerRadiusFloat]
+        // log([[currentLayer style])
+      var msstyle = [currentLayer style]
+      var mainfill = msstyle.fills().firstObject()
+      var fillColor = mainfill.colorGeneric()
+      propertiesDict.backgroundColor = wrapInQuotes("#" + [fillColor hexValue]))
+
+      }
     }
 
     propertiesDict.style = styleDict
@@ -83,15 +89,19 @@ function makeFramerLayerString(name, dict) {
 
     if (k == "style") {
       s = dictionary[k]
-      layerString+= "\t" + k + ":\n"
-      for(var m in s) {
-        layerString+= "\t\t" + m + ": " + s[m] + "\n"
+
+      // make sure style has shit in it
+      if ([s count] != 0) {
+        layerString+= "\t" + k + ":\n"
+        for(var m in s) {
+          layerString+= "\t\t" + m + ": " + s[m] + "\n"
+        }
       }
     }
     else {
       layerString+= "\t" + k + ": " + dictionary[k] + "\n"
     }
-
+  layerString += "\n"
   return layerString
 }
 function setClipboard(text) {
